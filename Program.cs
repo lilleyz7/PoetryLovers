@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using PoetryLovers.Data;
 using PoetryLovers.Entities;
+using PoetryLovers.IServices;
+using PoetryLovers.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,9 @@ builder.Services.AddHttpClient("poetryDb", (httpClient) =>
 {
     httpClient.BaseAddress = new Uri("https://poetrydb.org/");
 });
+
+builder.Services.AddScoped<PoetryDbService>();
+builder.Services.AddScoped<IPoemRepo, PoemRepo>();
 
 var env = builder.Environment;
 
