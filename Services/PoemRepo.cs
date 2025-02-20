@@ -62,14 +62,21 @@ namespace PoetryLovers.Services
             return new PoemResult<PoemDTO>(randomPoem, null);
         }
 
-        public async Task<List<PoemDTO>> GetPoemsByAuthor(string author, int count)
+        public async Task<PoemResult<List<PoemDTO>>> GetPoemsByAuthor(string author, int count)
         {
-            var poems = await _apiService.GetAuthorsPoems(author, count);
-            if (poems is null)
+            try
             {
-                return new List<PoemDTO>();
+                var poems = await _apiService.GetAuthorsPoems(author, count);
+                if (poems is null)
+                {
+                    return new PoemResult<List<PoemDTO>>(null, "Poem not found");
+                }
+
+                return new PoemResult<List<PoemDTO>>(poems, null);
+            } catch(Exception ex)
+            {
+                return new PoemResult<List<PoemDTO>>(null, ex.Message);
             }
-            return poems;
         }
 
         public async Task SavePoem(PoemDTO poemToAdd, string userId)

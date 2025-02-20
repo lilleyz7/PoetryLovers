@@ -7,7 +7,7 @@ namespace PoetryLovers.IServices
 {
     public interface IPoemRepo
     {
-        public Task<List<PoemDTO>> GetPoemsByAuthor(string author, int count);
+        public Task<PoemResult<List<PoemDTO>>> GetPoemsByAuthor(string author, int count);
         public Task<PoemResult<Poem>> GetPoemByTitle(string title);
         public Task<PoemResult<PoemDTO>> GetRandomPoem();
         public Task SavePoem(PoemDTO poemToAdd, string userId);

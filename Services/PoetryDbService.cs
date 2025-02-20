@@ -35,9 +35,19 @@ namespace PoetryLovers.Services
 
         public async Task<List<PoemDTO>?> GetAuthorsPoems(string author, int count)
         {
-            var poems = await _client.GetFromJsonAsync<List<PoemDTO>>($"author,count/{author};{count}");
+            try
+            {
+                var poems = await _client.GetFromJsonAsync<List<PoemDTO>>($"author,poemcount/{author};{count}");
 
-            return poems;
+                if (poems is null)
+                {
+                    return null;
+                }
+                return poems;
+            } catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

@@ -15,7 +15,7 @@ namespace PoetryLovers.Controllers
             _repo = repo;
         }
 
-        [HttpGet("/poems/{title}")]
+        [HttpGet("/byTitle/{title}")]
         public async Task<IActionResult> GetPoemByTitle(string title)
         {
             if (string.IsNullOrEmpty(title))
@@ -56,6 +56,25 @@ namespace PoetryLovers.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpGet("/byAuthor/{author}/{count}")]
+        public async Task<IActionResult> GetPoemsByAuthor(string author, int count)
+        {
+            if (string.IsNullOrEmpty(author)) { return BadRequest("Invalid author"); }
+
+            try
+            {
+                var poems = await _repo.GetPoemsByAuthor(author, count);
+
+                if (poems is not null) { return Ok(poems); }
+                else { return NotFound($"No poems for author {author}"); }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Could not find {author}: {ex.Message}");
+            }
+
         }
     }
 }

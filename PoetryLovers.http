@@ -5,7 +5,12 @@ Accept: application/json
 
 ###
 
-GET {{PoetryLovers_HostAddress}}/poems/darkness
+GET {{PoetryLovers_HostAddress}}/byTitle/darkness
+Accept: application/json
+
+###
+
+GET {{PoetryLovers_HostAddress}}/byAuthor/dickinson/3
 Accept: application/json
 
 ###
