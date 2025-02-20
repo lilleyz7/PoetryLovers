@@ -3,6 +3,7 @@ using PoetryLovers.Data;
 using PoetryLovers.Entities;
 using PoetryLovers.IServices;
 using PoetryLovers.Services;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,14 +12,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-
-builder.Services.AddHttpClient("poetryDb", (httpClient) => 
-{
-    httpClient.BaseAddress = new Uri("https://poetrydb.org/");
-});
-
-builder.Services.AddScoped<PoetryDbService>();
-builder.Services.AddScoped<IPoemRepo, PoemRepo>();
 
 var env = builder.Environment;
 
@@ -30,6 +23,13 @@ if (env.IsDevelopment())
     });
 }
 
+builder.Services.AddHttpClient<PoetryDbService>(httpClient =>
+{
+    httpClient.BaseAddress = new Uri("https://poetrydb.org/");
+});
+
+builder.Services.AddScoped<IPoemRepo, PoemRepo>();
+
 builder.Services.AddAuthorization();
 
 builder.Services.AddIdentityApiEndpoints<User>()
@@ -37,10 +37,13 @@ builder.Services.AddIdentityApiEndpoints<User>()
 
 var app = builder.Build();
 
+app.MapIdentityApi<User>();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();

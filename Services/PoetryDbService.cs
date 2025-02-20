@@ -4,7 +4,7 @@ namespace PoetryLovers.Services
 {
     public class PoetryDbService
     {
-        private readonly HttpClient _client;
+        public readonly HttpClient _client;
         public PoetryDbService(HttpClient client) 
         {
             _client = client;
@@ -12,16 +12,25 @@ namespace PoetryLovers.Services
 
         public async Task<PoemDTO?> GetRandomPoemAsync()
         {
-            var poem = await _client.GetFromJsonAsync<PoemDTO>("random");
 
-            return poem;
+            var response = await _client.GetFromJsonAsync<List<PoemDTO>>("random");
+            if (response is null)
+            {
+                return null;
+            }
+
+            return response[0];
         }
 
         public async Task<PoemDTO?> GetPoemByTitleAsync(string title)
         {
-            var poem = await _client.GetFromJsonAsync<PoemDTO>($"title/{title}");
+            var response = await _client.GetFromJsonAsync<List<PoemDTO>>($"title/{title}");
+            if (response is null)
+            {
+                return null;
+            }
 
-            return poem;
+            return response[0];
         }
 
         public async Task<List<PoemDTO>?> GetAuthorsPoems(string author, int count)

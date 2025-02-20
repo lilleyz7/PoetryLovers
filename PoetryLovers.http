@@ -1,6 +1,11 @@
 @PoetryLovers_HostAddress = http://localhost:5113
 
-GET {{PoetryLovers_HostAddress}}/weatherforecast/
+GET {{PoetryLovers_HostAddress}}/random
+Accept: application/json
+
+###
+
+GET {{PoetryLovers_HostAddress}}/poems/darkness
 Accept: application/json
 
 ###

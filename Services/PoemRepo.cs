@@ -10,8 +10,8 @@ namespace PoetryLovers.Services
 
     public class PoemRepo: IPoemRepo
     {
-        public readonly PoemContext _context;
-        public readonly PoetryDbService _apiService;
+        private readonly PoemContext _context;
+        private readonly PoetryDbService _apiService;
 
         public PoemRepo(PoemContext context, PoetryDbService apiService)
         {
@@ -70,6 +70,40 @@ namespace PoetryLovers.Services
                 return new List<PoemDTO>();
             }
             return poems;
+        }
+
+        public async Task SavePoem(PoemDTO poemToAdd, string userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user is null) {
+                throw new Exception("Invalid request");
+            }
+
+            var poemExists = await _context.Poems.FirstOrDefaultAsync(p => p.Title == poemToAdd.Title);
+
+            if (poemExists is null)
+            {
+                var poem = new Poem
+                {
+                    Title = poemToAdd.Title,
+                    Author = poemToAdd.Author,
+                    Linecount = poemToAdd.Linecount,
+                    Lines = poemToAdd.Lines,
+                };
+
+                poem.SavedByUsers.Add(user);
+                _context.Poems.Add(poem);
+            }
+            else
+            {
+                poemExists.SavedByUsers.Add(user);
+            }
+
+            var changes = await _context.SaveChangesAsync();
+            if (changes < 1)
+            {
+                throw new Exception("Unable to add");
+            }
         }
     }
 }
