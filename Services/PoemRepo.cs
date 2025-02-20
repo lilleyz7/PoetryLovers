@@ -79,6 +79,34 @@ namespace PoetryLovers.Services
             }
         }
 
+        public async Task<PoemResult<List<Poem>>> GetSavedPoems(string userId, int count)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return new PoemResult<List<Poem>>(null, "Invalid user");
+            }
+
+            try
+            {
+
+                var user = await _context.Users.Include(u => u.SavedPoems).FirstOrDefaultAsync(u => u.Id == userId);
+                if (user is null)
+                {
+                    return new PoemResult<List<Poem>>(null, "User does not exist");
+                }
+                return new PoemResult<List<Poem>>(user.SavedPoems, null);
+            }
+            catch (ArgumentNullException)
+            {
+                return new PoemResult<List<Poem>>(null, "Invalid arguments");
+            }
+            catch (Exception ex)
+            {
+                return new PoemResult<List<Poem>>(null, ex.Message);
+            }
+            
+        }
+
         public async Task SavePoem(PoemDTO poemToAdd, string userId)
         {
             var user = await _context.Users.FindAsync(userId);
@@ -86,9 +114,9 @@ namespace PoetryLovers.Services
                 throw new Exception("Invalid request");
             }
 
-            var poemExists = await _context.Poems.FirstOrDefaultAsync(p => p.Title == poemToAdd.Title);
+            var existingPoem = await _context.Poems.FirstOrDefaultAsync(p => p.Title == poemToAdd.Title);
 
-            if (poemExists is null)
+            if (existingPoem is null)
             {
                 var poem = new Poem
                 {
@@ -98,19 +126,51 @@ namespace PoetryLovers.Services
                     Lines = poemToAdd.Lines,
                 };
 
-                poem.SavedByUsers.Add(user);
                 _context.Poems.Add(poem);
+                user.SavedPoems.Add(poem);
+
+                var changes = await _context.SaveChangesAsync();
+                if (changes < 1)
+                {
+                    throw new Exception("Unable to add");
+                }
             }
             else
             {
-                poemExists.SavedByUsers.Add(user);
+                var alreadySaved = user.SavedPoems.Find(p => p.Title == poemToAdd.Title);
+                if (alreadySaved is null)
+                {
+                    try
+                    {
+                        existingPoem.SavedByUsers.Add(user);
+                        await _context.SaveChangesAsync();
+
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
+                    }
+                }
+                else
+                {
+                    try
+                    {
+
+                        existingPoem.SavedByUsers.Remove(user);
+                        user.SavedPoems.Remove(alreadySaved);
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
+                    }
+
+                }
             }
 
-            var changes = await _context.SaveChangesAsync();
-            if (changes < 1)
-            {
-                throw new Exception("Unable to add");
-            }
+            
         }
+
+
     }
 }

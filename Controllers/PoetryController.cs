@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PoetryLovers.DTO;
 using PoetryLovers.IServices;
 using PoetryLovers.Services;
+using System.Security.Claims;
 
 namespace PoetryLovers.Controllers
 {
@@ -75,6 +78,34 @@ namespace PoetryLovers.Controllers
                 return BadRequest($"Could not find {author}: {ex.Message}");
             }
 
+        }
+
+        [Authorize]
+        [HttpPost("/save")]
+        public async Task<IActionResult> SavePoemToUser(PoemDTO poemToAdd)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            if (poemToAdd is null)
+            {
+                return BadRequest("Invalid body");
+            }
+
+            try
+            {
+
+                await _repo.SavePoem(poemToAdd, userId);
+                return Ok("Poem Added");
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }
