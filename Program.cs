@@ -35,6 +35,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<User>()
     .AddEntityFrameworkStores<PoemContext>();
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 app.MapIdentityApi<User>();
@@ -46,6 +48,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
+app.MapHealthChecks("/health");
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
