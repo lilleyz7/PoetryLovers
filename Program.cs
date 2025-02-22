@@ -1,20 +1,37 @@
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using PoetryLovers.Data;
 using PoetryLovers.Entities;
 using PoetryLovers.IServices;
 using PoetryLovers.Services;
 using Scalar.AspNetCore;
+using System.Threading.RateLimiting;
 
 
-var DevelopmentPolicy = "_devPolicy";
-var ProductionPolicy = "productionPolicy";
+const string DevelopmentPolicy = "_devPolicy";
+const string ProductionPolicy = "_productionPolicy";
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-// SETUP CORS
 // SETUP RATE LIMITING
+
+builder.Services.AddRateLimiter(_ => _
+    .AddFixedWindowLimiter(policyName: "postLimiter", options =>
+    {
+        options.PermitLimit = 5;
+        options.Window = TimeSpan.FromSeconds(30);
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 4;
+    }));
+
+builder.Services.AddRateLimiter(_ => _
+    .AddFixedWindowLimiter(policyName: "getLimiter", options =>
+    {
+        options.PermitLimit = 5;
+        options.Window = TimeSpan.FromSeconds(90);
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 2;
+    }));
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -75,6 +92,8 @@ builder.Services.AddIdentityApiEndpoints<User>()
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
+
+app.UseRateLimiter();
 
 app.MapIdentityApi<User>();
 

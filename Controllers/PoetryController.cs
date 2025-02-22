@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using PoetryLovers.DTO;
 using PoetryLovers.IServices;
 using PoetryLovers.Services;
@@ -18,6 +19,8 @@ namespace PoetryLovers.Controllers
             _repo = repo;
         }
 
+        [Authorize]
+        [EnableRateLimiting("getLimiter")]
         [HttpGet("/byTitle/{title}")]
         public async Task<IActionResult> GetPoemByTitle(string title)
         {
@@ -43,6 +46,7 @@ namespace PoetryLovers.Controllers
             }
         }
 
+        [EnableRateLimiting("getLimiter")]
         [HttpGet("/random")]
         public async Task<IActionResult> GetRandomPoem()
         {
@@ -61,6 +65,8 @@ namespace PoetryLovers.Controllers
             }
         }
 
+        [Authorize]
+        [EnableRateLimiting("getLimiter")]
         [HttpGet("/byAuthor/{author}/{count}")]
         public async Task<IActionResult> GetPoemsByAuthor(string author, int count)
         {
@@ -81,6 +87,7 @@ namespace PoetryLovers.Controllers
         }
 
         [Authorize]
+        [EnableRateLimiting("postLimiter")]
         [HttpPost("/save")]
         public async Task<IActionResult> SavePoemToUser(PoemDTO poemToAdd)
         {
