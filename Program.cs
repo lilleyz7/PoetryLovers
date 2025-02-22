@@ -5,9 +5,16 @@ using PoetryLovers.IServices;
 using PoetryLovers.Services;
 using Scalar.AspNetCore;
 
+
+var DevelopmentPolicy = "_devPolicy";
+var ProductionPolicy = "productionPolicy";
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+// SETUP CORS
+// SETUP RATE LIMITING
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -17,9 +24,39 @@ var env = builder.Environment;
 
 if (env.IsDevelopment())
 {
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy(name: DevelopmentPolicy,
+                          policy =>
+                          {
+                              policy.WithOrigins("http://localhost:5753",
+                                                  "https://localhost:5753");
+                          });
+    });
     builder.Services.AddDbContext<PoemContext>(opt => {
         var connectionString = builder.Configuration.GetConnectionString("Sqlite");
         opt.UseSqlite(connectionString);
+    });
+}
+else if (env.IsProduction())
+{
+    var productionOrigin = builder.Configuration["ProductionOriginUrl"];
+    if (productionOrigin is null)
+    {
+        throw new Exception("No production url available");
+    }
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy(name: ProductionPolicy,
+                          policy =>
+                          {
+                              policy.WithOrigins(productionOrigin);
+                          });
+    });
+
+    builder.Services.AddDbContext<PoemContext>(opt => {
+        var connectionString = builder.Configuration.GetConnectionString("Production");
+        opt.UseSqlServer(connectionString);
     });
 }
 
