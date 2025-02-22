@@ -13,8 +13,10 @@ const string ProductionPolicy = "_productionPolicy";
 
 var builder = WebApplication.CreateBuilder(args);
 
-// SETUP RATE LIMITING
+//TODOS
+// Add Logging
 
+// SETUP RATE LIMITING
 builder.Services.AddRateLimiter(_ => _
     .AddFixedWindowLimiter(policyName: "postLimiter", options =>
     {
