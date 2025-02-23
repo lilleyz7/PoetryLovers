@@ -114,5 +114,36 @@ namespace PoetryLovers.Controllers
                 return NotFound(ex.Message);
             }
         }
+
+        [Authorize]
+        [EnableRateLimiting("getLimiter")]
+        [HttpGet("/mySaves/{count}")]
+        public async Task<IActionResult> GetUserSaves(int count)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var poems = await _repo.GetSavedPoems(userId, count);
+                if (poems is not null)
+                {
+                    return Ok(poems);
+                }
+                else
+                {
+                    return Ok();
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
     }
 }
