@@ -16,6 +16,9 @@ var builder = WebApplication.CreateBuilder(args);
 //TODOS
 // Add Logging
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 // SETUP RATE LIMITING
 builder.Services.AddRateLimiter(_ => _
     .AddFixedWindowLimiter(policyName: "postLimiter", options =>

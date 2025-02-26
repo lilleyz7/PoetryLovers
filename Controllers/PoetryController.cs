@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using PoetryLovers.DTO;
 using PoetryLovers.IServices;
 using PoetryLovers.Services;
+using PoetryLovers.Utilities;
 using System.Security.Claims;
 
 namespace PoetryLovers.Controllers
@@ -14,9 +15,11 @@ namespace PoetryLovers.Controllers
     public class PoetryController : ControllerBase
     {
         public readonly IPoemRepo _repo;
-        public PoetryController(IPoemRepo repo)
+        public readonly ILogger _logger;
+        public PoetryController(IPoemRepo repo, ILogger logger)
         { 
             _repo = repo;
+            _logger = logger;
         }
 
         [Authorize]
@@ -33,15 +36,18 @@ namespace PoetryLovers.Controllers
                 var poemResult = await _repo.GetPoemByTitle(title);
                 if (poemResult.poem is not null)
                 {
+                    _logger.LogInformation($"Received Poem {poemResult.poem.Title}");
                     return Ok(poemResult.poem);
                 }
                 else
                 {
+                    _logger.LogError($"Failed request: {poemResult.error}");
                     return BadRequest(poemResult.error);
                 }
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Failed request: {ex.Message}");
                 return BadRequest(ex.Message);
             }
         }
@@ -55,12 +61,16 @@ namespace PoetryLovers.Controllers
                 var poemResult = await _repo.GetRandomPoem();
                 if (poemResult.poem is not null)
                 {
+                    _logger.LogInformation($"Received Poem {poemResult.poem.Title}");
                     return Ok(poemResult.poem);
                 }
+
+                _logger.LogError($"Failed request: {poemResult.error}");
                 return BadRequest(poemResult.error);
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Failed request: {ex.Message}");
                 return BadRequest(ex.Message);
             }
         }
@@ -81,6 +91,7 @@ namespace PoetryLovers.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Failed request: {ex.Message}");
                 return BadRequest($"Could not find {author}: {ex.Message}");
             }
 
@@ -111,6 +122,7 @@ namespace PoetryLovers.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Failed request: {ex.Message}");
                 return NotFound(ex.Message);
             }
         }
@@ -141,6 +153,7 @@ namespace PoetryLovers.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Failed request: {ex.Message}");
                 return BadRequest(ex.Message);
             }
 
